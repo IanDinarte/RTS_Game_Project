@@ -56,8 +56,8 @@ public class GameRTSController : MonoBehaviour
                 {
                     foreach (UnitController unit in selectedUnitList)
                     {
-                        unit.SetAttackTarget(null);
-                        unit.SetDestination(unit.transform.position);
+                        // unit.SetAttackTarget(null);
+                        unit.StopAction();
                     }
                 }
             }
@@ -164,13 +164,17 @@ public class GameRTSController : MonoBehaviour
 
                     foreach (UnitController unit in selectedUnitList)
                     {
+                        unit.StopAction();
+
                         if (targetUnit != null)
                         {
+                            // Debug.Log("ataca");
                             unit.SetAttackTarget(targetUnit);
                         }
                         else
                         {
-                            unit.SetDestination(target + targetPositionList[targetPositionListIndex]);
+                            // Debug.Log("move");
+                            unit.OrderMove(target + targetPositionList[targetPositionListIndex]);
                         }
 
                         targetPositionListIndex++;
