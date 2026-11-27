@@ -2,19 +2,19 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /**
- * Corrigir animação ataque
+ * 
 */
 [RequireComponent(typeof(NavMeshAgent))]
 public class UnitAttackController : MonoBehaviour
 {
     private NavMeshAgent agent;
     private Animator animator;
-    private UnitController currentTarget;
-    private UnitHitController currentTargetHitController;
+    [SerializeField] private UnitController currentTarget;
+    [SerializeField] private UnitHitController currentTargetHitController;
 
     public UnitController CurrentTarget { get => currentTarget; set => currentTarget = value; }
     public UnitHitController CurrentTargetHitController { get => currentTargetHitController; set => currentTargetHitController = value; }
-    
+
     [SerializeField] public int attackDamage;
     [SerializeField] public float attackRange;
     public bool inAttackRange;
@@ -48,16 +48,19 @@ public class UnitAttackController : MonoBehaviour
                 if (Vector2.Distance(this.transform.position, CurrentTarget.transform.position) <= attackRange)
                 {
                     agent.ResetPath();
+                    agent.avoidancePriority = 0;
                     // agent.isStopped = true;
                     inAttackRange = true;
 
                     if (Time.time >= lastAttackTime + attackCooldown && isAttacking == false)
                     {
+                        Debug.Log("im supposed to attack now.");
                         Attack();
                     }
                 }
                 else
                 {
+                    agent.avoidancePriority = 50;
                     inAttackRange = false;
                 }
             }
@@ -66,6 +69,7 @@ public class UnitAttackController : MonoBehaviour
         {
             currentTargetHitController = null;
             inAttackRange = false;
+            agent.avoidancePriority = 50;
         }
     }
 

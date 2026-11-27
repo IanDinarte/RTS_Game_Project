@@ -228,7 +228,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.15
-  m_Speed: 1.5
+  m_Speed: 2
   m_Acceleration: 999
   avoidancePriority: 50
   m_AngularSpeed: 360
@@ -254,8 +254,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitController
   unitAttackController: {fileID: 0}
   currentBehaviour: 0
-  aggroRange: 2
+  aggroRange: 3
   isMoving: 0
+  isManualMove: 0
 --- !u!114 &4668824488751384246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,8 +270,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitHitController
   healthBar: {fileID: 0}
-  maxHealth: 100
-  currentHealth: 100
+  maxHealth: 75
+  currentHealth: 75
   armor: 0
 --- !u!114 &-2144713302609951580
 MonoBehaviour:
@@ -286,10 +287,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitAttackController
   currentTarget: {fileID: 0}
   currentTargetHitController: {fileID: 0}
-  attackDamage: 25
-  attackRange: 0.75
+  attackDamage: 20
+  attackRange: 0.5
   inAttackRange: 0
-  attackCooldown: 2
+  attackCooldown: 1.5
 --- !u!1 &1431736235838300332
 GameObject:
   m_ObjectHideFlags: 0

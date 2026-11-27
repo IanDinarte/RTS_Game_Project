@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -14,12 +15,14 @@ using UnityEngine.InputSystem;
 */
 public class GameRTSController : MonoBehaviour
 {
+    public static GameRTSController Instance { get; private set; }
+
     private Vector2 startPosition;
     private Vector2 endPosition;
 
     [SerializeField] private Transform selectionAreaTransform; //Selection Area Box
-    [SerializeField] private int unitPerRow; //Max units per row on formation (army)
-    [SerializeField] private List<UnitController> selectedUnitList; //list of currently selected units
+    [SerializeField] private int unitsPerRow; //Max units per row on formation (army)
+    [SerializeField] public List<UnitController> selectedUnitList; //list of currently selected units
     [SerializeField] private float spacing; //gap between units in formation
 
     //navmesh agent stuff
@@ -31,7 +34,15 @@ public class GameRTSController : MonoBehaviour
 
     private void Awake()
     {
-        unitPerRow = 5;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
+        unitsPerRow = 3;
         spacing = 0.5f;
         selectedUnitList = new List<UnitController>();
         selectionAreaTransform.gameObject.SetActive(false);
@@ -58,6 +69,22 @@ public class GameRTSController : MonoBehaviour
                     {
                         // unit.SetAttackTarget(null);
                         unit.StopAction();
+                    }
+                }
+            }
+
+            if (Keyboard.current.deleteKey.wasPressedThisFrame || Keyboard.current.numpadPeriodKey.wasPressedThisFrame)
+            {
+                if (selectedUnitList.Count > 0)
+                {
+                    UnitController unitToDestroy = selectedUnitList.First();
+                    if (unitToDestroy != null)
+                    {
+                        UnitHitController hitController = unitToDestroy.GetComponent<UnitHitController>();
+                        if (hitController != null)
+                        {
+                            hitController.CurrentHealth = 0;
+                        }
                     }
                 }
             }
@@ -159,7 +186,8 @@ public class GameRTSController : MonoBehaviour
                 */
                 if (selectedUnitList.Count > 0)
                 {
-                    List<Vector2> targetPositionList = GetPositionListRectangle(target, selectedUnitList.Count, unitPerRow);
+                    // List<Vector2> targetPositionList = GetPositionListRectangle(target, selectedUnitList.Count, unitPerRow);
+                    List<Vector2> targetPositionList = GetOrientedFormationPositions(target);
                     int targetPositionListIndex = 0;
 
                     foreach (UnitController unit in selectedUnitList)
@@ -174,7 +202,7 @@ public class GameRTSController : MonoBehaviour
                         else
                         {
                             // Debug.Log("move");
-                            unit.OrderMove(target + targetPositionList[targetPositionListIndex]);
+                            unit.OrderMove(targetPositionList[targetPositionListIndex]);
                         }
 
                         targetPositionListIndex++;
@@ -205,7 +233,7 @@ public class GameRTSController : MonoBehaviour
         return frontUnit;
     }
 
-    private List<Vector2> GetPositionListRectangle(Vector2 destination, int unitCount, int unitPerRow)
+    private List<Vector2> GetPositionListRectangle(Vector2 targetPosition, int unitCount, int unitPerRow)
     {
         List<Vector2> positionList = new List<Vector2>();
         int rowCount = DefineRowCount(unitCount, unitPerRow);
@@ -222,8 +250,45 @@ public class GameRTSController : MonoBehaviour
                 float xOffset = (spacing * j) - (rowWidth / 2f);
                 float yOffset = (spacing * i) - (totalHeight / 2f);
 
-                positionList.Add(new Vector2(xOffset, yOffset));
+                positionList.Add(targetPosition + new Vector2(xOffset, yOffset));
             }
+        }
+
+        return positionList;
+    }
+
+    private List<Vector2> GetOrientedFormationPositions(Vector2 targetPosition)
+    {
+        List<Vector2> positionList = new List<Vector2>();
+        int totalUnits = selectedUnitList.Count();
+
+        if (totalUnits == 0) return positionList;
+
+        Vector2 groupCenter = Vector2.zero;
+        foreach (UnitController unit in selectedUnitList)
+        {
+            groupCenter += (Vector2)unit.transform.position;
+        }
+        groupCenter /= totalUnits;
+
+        Vector2 direction = targetPosition - groupCenter;
+        Vector2 forward = direction.sqrMagnitude > 0.001f ? direction.normalized : Vector2.up;
+        Vector2 right = new Vector2(forward.y, -forward.x);
+
+        int totalRows = DefineRowCount(totalUnits, unitsPerRow);
+
+        for (int i = 0; i < totalUnits; i++)
+        {
+            int row = i / unitsPerRow;
+            int col = i % unitsPerRow;
+
+            int unitsInCurrentRow = Mathf.Min(unitsPerRow, totalUnits - (row * unitsPerRow));
+
+            float rowOffset = (row - (totalRows - 1) * 0.5f) * spacing;
+            float colOffset = (col - (unitsInCurrentRow - 1) * 0.5f) * spacing;
+
+            Vector2 finalPos = targetPosition + (right * colOffset) - (forward * rowOffset);
+            positionList.Add(finalPos);
         }
 
         return positionList;
@@ -234,5 +299,14 @@ public class GameRTSController : MonoBehaviour
         int rowCount = (int)Math.Ceiling((double)unitCount / unitPerRow);
 
         return rowCount;
+    }
+
+    public void DeselectUnit(UnitController unit)
+    {
+        if (unit != null && selectedUnitList.Contains(unit))
+        {
+            unit.SetSelectedVisible(false);
+            selectedUnitList.Remove(unit);
+        }
     }
 }

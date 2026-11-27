@@ -6,41 +6,44 @@ using UnityEngine.AI;
  */
 public class UnitHitController : MonoBehaviour
 {
-    // private UnitAttackController unitAttackController;
+    private UnitAttackController unitAttackController;
+    private UnitController unitController;
     public HealthBar healthBar;
     private NavMeshAgent agent;
     private Animator animator;
     [SerializeField] private int maxHealth;
-    public int MaxHealth { get => maxHealth; set => maxHealth = value; }
     [SerializeField] private int currentHealth;
     [SerializeField] private int armor;
+    public int MaxHealth { get => maxHealth; set => maxHealth = value; }
+    public int CurrentHealth { get => currentHealth; set => currentHealth = value; }
+    private bool isDead;
+    
+    public Vector2[] attackSlots;
 
     private void Awake()
     {
-        // unitAttackController = GetComponent<UnitAttackController>();
+        unitAttackController = GetComponent<UnitAttackController>();
+        unitController = GetComponent<UnitController>();
         animator = GetComponentInChildren<Animator>();
         agent = GetComponent<NavMeshAgent>();
         healthBar = GetComponentInChildren<HealthBar>();
         healthBar.SetVisible(false);
+
+        isDead = false;
     }
 
     private void Update()
     {
-        if(currentHealth > maxHealth)
+        if (CurrentHealth > maxHealth)
         {
-            currentHealth = maxHealth;
+            CurrentHealth = maxHealth;
         }
 
-        if(currentHealth < 0)
+        if (CurrentHealth <= 0 && !isDead)
         {
-            currentHealth = 0;
+            CurrentHealth = 0;
+            Die();
         }
-
-        // if (currentHealth <= 0)
-        // {
-        //     healthBar.SetVisible(false);
-        //     Die();
-        // }
     }
 
     public void TakeDamage(int damage)
@@ -67,25 +70,34 @@ public class UnitHitController : MonoBehaviour
 
         damage -= (int)(damage * mitigation);
 
-        currentHealth -= damage;
-        healthBar.UpdateHealthBar(currentHealth, maxHealth);
+        CurrentHealth -= damage;
+        healthBar.UpdateHealthBar(CurrentHealth, maxHealth);
         healthBar.SetVisible(true);
 
-        if (currentHealth <= 0)
+        if (CurrentHealth <= 0)
         {
-            healthBar.SetVisible(false);
             Die();
         }
     }
 
     private void Die()
     {
-        //play death animation
-        // unitAttackController.CurrentTarget = null;
-        // unitAttackController.CurrentTargetHitController = null;
-        animator.SetBool("Dead", true);
-        agent.enabled = false;
         gameObject.tag = "Dead";
-        // Destroy(gameObject);
+        animator.SetBool("Dead", true);
+        isDead = true;
+
+        if (unitController != null)
+        {
+            unitController.CurrentBehaviour = UnitController.UnitBehaviour.PASSIVE;
+            if (GameRTSController.Instance != null)
+            {
+                GameRTSController.Instance.DeselectUnit(unitController);
+            }
+        }
+
+        healthBar.SetVisible(false);
+        unitAttackController.CurrentTarget = null;
+        unitAttackController.CurrentTargetHitController = null;
+        agent.enabled = false;
     }
 }

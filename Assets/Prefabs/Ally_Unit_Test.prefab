@@ -193,7 +193,7 @@ Animator:
   m_GameObject: {fileID: 1268533882710116419}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: b519ca1edc422635984e984c3837d49d, type: 2}
+  m_Controller: {fileID: 9100000, guid: 04f0544936315a7c893b97fd74c87a69, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -344,7 +344,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitController
   unitAttackController: {fileID: 0}
+  currentBehaviour: 0
+  aggroRange: 3
   isMoving: 0
+  isManualMove: 0
 --- !u!114 &-230712422067280482
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -358,9 +361,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitHitController
   healthBar: {fileID: 0}
-  maxHealth: 100
-  currentHealth: 100
-  armor: 0
+  maxHealth: 150
+  currentHealth: 150
+  armor: 20
 --- !u!114 &4029969069201629925
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -375,10 +378,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitAttackController
   currentTarget: {fileID: 0}
   currentTargetHitController: {fileID: 0}
-  attackDamage: 0
-  attackRange: 0
+  attackDamage: 15
+  attackRange: 0.75
   inAttackRange: 0
-  attackCooldown: 0
+  attackCooldown: 2.5
 --- !u!1 &1431736235838300332
 GameObject:
   m_ObjectHideFlags: 0

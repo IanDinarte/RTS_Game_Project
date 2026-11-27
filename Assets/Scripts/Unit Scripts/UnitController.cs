@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /**
- * Animação espelhada para andar pro outro lado.
+ * - delay no behaviour (behaviour cooldown)
+ * - quando tiver atacando desativa o navmeshagent e ativa navmeshobstacle com carve ativado
+ * - ler ultima mensagem gemini pra ideias
 */
 [RequireComponent(typeof(NavMeshAgent))]
 public class UnitController : MonoBehaviour
@@ -21,15 +23,15 @@ public class UnitController : MonoBehaviour
      * STAND: Won't follow the target but will attack if it's in range.
      * PASSIVE: Won't react at all.
     */
-    private enum Behaviour
+    public enum UnitBehaviour
     {
         AGGRESSIVE,
         DEFENSIVE,
         STAND,
         PASSIVE
     }
-    [SerializeField] private Behaviour currentBehaviour = Behaviour.AGGRESSIVE;
-    private Behaviour CurrentBehaviour { get => currentBehaviour; set => currentBehaviour = value; }
+    [SerializeField] private UnitBehaviour currentBehaviour = UnitBehaviour.AGGRESSIVE;
+    public UnitBehaviour CurrentBehaviour { get => currentBehaviour; set => currentBehaviour = value; }
 
     [SerializeField] private float aggroRange;
     public bool isMoving;
@@ -50,7 +52,7 @@ public class UnitController : MonoBehaviour
 
     void Update()
     {
-        isMoving = agent.pathPending || agent.velocity.sqrMagnitude > 0.0f;
+        isMoving = agent.pathPending || agent.velocity.sqrMagnitude > 0.01f;
         animator.SetBool("IsMoving", isMoving);
 
         if (isManualMove && !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
@@ -137,12 +139,12 @@ public class UnitController : MonoBehaviour
     {
         switch (currentBehaviour)
         {
-            case Behaviour.AGGRESSIVE:
+            case UnitBehaviour.AGGRESSIVE:
                 SetAttackTarget(GetEnemyInRange());
                 break;
-            case Behaviour.DEFENSIVE:
+            case UnitBehaviour.DEFENSIVE:
                 break;
-            case Behaviour.STAND:
+            case UnitBehaviour.STAND:
                 break;
             default: //Behaviour.PASSIVE
                 break;

@@ -299,7 +299,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitController
   unitAttackController: {fileID: 0}
+  currentBehaviour: 0
+  aggroRange: 3
   isMoving: 0
+  isManualMove: 0
 --- !u!114 &3779044697204110804
 MonoBehaviour:
   m_ObjectHideFlags: 0
